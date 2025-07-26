@@ -75,28 +75,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['correo'])) {
       ?>
         <div class="elemento <?= htmlspecialchars($row['lista']) ?>">
           <h3><?= htmlspecialchars($row['nombre']) ?></h3>
-          <?php if (!empty($row['video_url'])): ?>
+          <?php 
+          // Mostrar video local basado en el ID del elemento
+          $elemento_id = (int)$row['id'];
+          $video_path = '';
+          
+          // Mapear ID a archivo de video
+          if ($elemento_id === 1) {
+              $video_path = '../videos/a.mp4';
+          } elseif ($elemento_id === 2) {
+              $video_path = '../videos/b.mp4';
+          }
+          
+          // Verificar que el archivo existe antes de mostrarlo
+          if (!empty($video_path) && file_exists($video_path)): ?>
             <div class="video-container">
-              <?php 
-              $video_url = $row['video_url'];
-              if (strpos($video_url, 'drive.google.com') !== false) {
-                  // Extraer ID de Google Drive correctamente
-                  if (preg_match('/\/d\/([a-zA-Z0-9_-]{25,})/', $video_url, $matches)) {
-                      $videoID = $matches[1];
-                      $embedUrl = "https://drive.google.com/uc?export=preview&id=" . $videoID;
-                      echo '<iframe width="100%" height="200" src="' . htmlspecialchars($embedUrl) . '" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>';
-                  } else {
-                      echo "<p>Video no válido de Drive.</p>";
-                  }
-              } elseif (preg_match('/(youtube\.com|youtu\.be)/', $video_url)) {
-                  echo '<iframe width="100%" height="200" src="' . htmlspecialchars($video_url) . '" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>';
-              } else {
-                  echo '<video width="100%" height="200" controls>
-                          <source src="' . htmlspecialchars($video_url) . '" type="video/mp4" />
-                          Tu navegador no soporta la reproducción de video.
-                        </video>';
-              }
-              ?>
+              <video width="100%" height="200" controls preload="metadata">
+                <source src="<?= htmlspecialchars($video_path) ?>" type="video/mp4">
+                <p>Tu navegador no soporta la reproducción de video HTML5.</p>
+              </video>
+            </div>
+          <?php else: ?>
+            <div class="video-placeholder">
+              <p>Video no disponible</p>
             </div>
           <?php endif; ?>
           <button class="like-btn" data-id="<?= (int)$row['id'] ?>" <?= $votoUsuario ? 'disabled' : '' ?>>
